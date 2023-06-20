@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Http\Controllers\API;
-use App\models\ketinggian;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Helpers\ApiFormatter;
+use App\Models\ketinggian;
 use Exception;
 class EdgeController extends Controller
 {
@@ -16,7 +16,12 @@ class EdgeController extends Controller
     public function index()
     {
         $data = ketinggian::latest()->first();
-        
+        $data = Ketinggian::where('id_sensor', 1)->orderBy('id', 'desc')->first();
+        $data = Ketinggian::where('id_sensor', 2)->orderBy('id', 'desc')->first();
+
+        // Render view dengan menggunakan data ketinggian
+        // include('views/index.php');
+
 
         // Kirim respons JSON dengan data sensor
         if($data) {
@@ -25,9 +30,9 @@ class EdgeController extends Controller
             return ApiFormatter::createApi(400, 'failed');
         }
         }
-        
-    
-    
+
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -120,7 +125,7 @@ class EdgeController extends Controller
         //
     }
 
-    public function test(){
-        return response()->json('test');
-    }
+    // public function test(){
+    //     return response()->json('test');
+    // }
 }
