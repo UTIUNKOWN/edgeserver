@@ -17,7 +17,8 @@ return new class extends Migration
             $table->id();
             $table->integer('id_sensor');
             $table->integer('ketinggian');
-            $table->timestamps('log');
+            $table->dateTime('log');
+            $table->timestamps();
         });
     }
 

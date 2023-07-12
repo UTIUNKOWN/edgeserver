@@ -15,23 +15,35 @@ class EdgeController extends Controller
      */
     public function index()
     {
-        $data = ketinggian::latest()->first();
-        $data = Ketinggian::where('id_sensor', 1)->orderBy('id', 'desc')->first();
-        $data = Ketinggian::where('id_sensor', 2)->orderBy('id', 'desc')->first();
+        // $data = ketinggian::latest()->first();
+        // $data = Ketinggian::where('id_sensor', 1)->latest()->first();
+        // $data = Ketinggian::where('id_sensor', 2)->latest()->first();
 
-        // Render view dengan menggunakan data ketinggian
-        // include('views/index.php');
 
+        // // Kirim respons JSON dengan data sensor
+        // if($data) {
+        //     return ApiFormatter::createApi(200, 'success', $data);
+        // }else {
+        //     return ApiFormatter::createApi(400, 'failed');
+        // }
+        // }
+
+        $dataSensor1 = Ketinggian::where('id_sensor', 1)->latest()->first();
+        $dataSensor2 = Ketinggian::where('id_sensor', 2)->latest()->first();
+
+        $data = [
+            'sensor_1' => $dataSensor1,
+            'sensor_2' => $dataSensor2
+        ];
 
         // Kirim respons JSON dengan data sensor
-        if($data) {
+        if ($data['sensor_1'] && $data['sensor_2']) {
             return ApiFormatter::createApi(200, 'success', $data);
-        }else {
+        } else {
             return ApiFormatter::createApi(400, 'failed');
         }
-        }
 
-
+    }
 
 
     /**
@@ -125,7 +137,7 @@ class EdgeController extends Controller
         //
     }
 
-    // public function test(){
-    //     return response()->json('test');
-    // }
+     public function test(){
+         return response()->json('test');
+     }
 }
