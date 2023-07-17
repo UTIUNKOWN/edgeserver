@@ -82,14 +82,7 @@ class EdgeController extends Controller
                 return ApiFormatter::createApi(200, 'success', $data);
             }else {
                 return ApiFormatter::createApi(400, 'failed');
-            // if ($ketinggian) {
-            //     // Berhasil menyimpan data
-            //     return response()->json(['message' => 'Data berhasil disimpan'], 200);
-            // } else {
-            //     // Gagal menyimpan data
-            //     return response()->json(['message' => 'Gagal menyimpan data'], 400);
             }
-
         } catch (Exception $error) {
             return ApiFormatter::createApi(400, 'failed');
         }
@@ -143,6 +136,10 @@ class EdgeController extends Controller
     public function post(Request $request)
 {
     try {
+        $request->validate([
+            'id_sensor' => 'required',
+            'kapasitas' => 'required',
+        ]);
         $url = 'http://192.168.0.145:8000/api/monitoring';
         $id_sensor = $request->id_sensor;
         $kapasitas = $request->kapasitas;
@@ -162,24 +159,31 @@ class EdgeController extends Controller
             'kapasitas' => $kapasitas,
             'status' => 'success'
         ]);
-
-        $response->getStatusCode();
-
-        $check_pending = ketinggian::where('status', 'pending')->get();
-        foreach ($check_pending as $key => $value) {
-            $data = [
-                'id_sensor' => $value->id_sensor,
-                'kapasitas' => $value->kapasitas,
-            ];
-            $client->post($url, [
-                'form_params' => $data
-            ]);
-            ketinggian::where('id', $value->id)->update([
+        if ($response->getStatusCode() == 200) {
+            $data = ketinggian::create([
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
                 'status' => 'success'
             ]);
-        }
 
-        return ApiFormatter::createApi($data, 'Upload Successfully');
+            $check_pending = ketinggian::where('status', 'pending')->get();
+            foreach ($check_pending as $key => $value) {
+                $data = [
+                    'id_sensor' => $value->id_sensor,
+                    'kapasitas' => $value->kapasitas,
+                ];
+                $client->post($url, [
+                    'form_params' => $data
+                ]);
+                ketinggian::where('id', $value->id)->update([
+                    'status' => 'success'
+                ]);
+            }
+
+            return ApiFormatter::createApi($data, 'Upload Successfully');
+        } else {
+            throw new Exception('Cloud server failed to process the request');
+        }
     } catch (Exception $e) {
         // Ambil id_sensor terakhir dari edge
         $lastSensorData = ketinggian::orderBy('id', 'DESC')->first();
