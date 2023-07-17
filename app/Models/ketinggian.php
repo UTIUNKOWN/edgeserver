@@ -11,7 +11,7 @@ class ketinggian extends Model
     protected $table = 'data_ketinggian';
     protected $fillable = [
         'id_sensor',
-        'ketinggian'
+        'kapasitas'
     ];
     protected $hidden = [];
     // public function node()
