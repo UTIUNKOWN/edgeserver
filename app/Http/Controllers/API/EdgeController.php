@@ -143,7 +143,7 @@ class EdgeController extends Controller
     public function post(Request $request)
 {
     try {
-        $url = 'http://192.168.0.145:8000/api/cloud';
+        $url = 'http://192.168.0.145:8000/api/monitoring';
         $id_sensor = $request->id_sensor;
         $kapasitas = $request->kapasitas;
         $data = [
