@@ -174,7 +174,6 @@ class EdgeController extends Controller
             $client->post($url, [
                 'form_params' => $data
             ]);
-
             ketinggian::where('id', $value->id)->update([
                 'status' => 'success'
             ]);
