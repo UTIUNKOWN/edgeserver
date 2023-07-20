@@ -9,9 +9,8 @@ class ketinggian extends Model
 {
     use HasFactory;
     protected $table = 'data_ketinggian';
-    protected $fillable = [
-        'id_sensor',
-        'kapasitas'
+    protected $guarded = [
+
     ];
     protected $hidden = [];
     // public function node()
