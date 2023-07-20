@@ -23,14 +23,13 @@ class EdgeController extends Controller
         $data = ketinggian::latest()->first();
         // $data = Ketinggian::where('id_sensor', 1)->latest()->first();
         // $data = Ketinggian::where('id_sensor', 2)->latest()->first();
-        return view('test');
 
         // // Kirim respons JSON dengan data sensor
-        // if($data) {
-        //     return ApiFormatter::createApi(200, 'success', $data);
-        //  }else {
-        //      return ApiFormatter::createApi(400, 'failed');
-        //  }
+        if($data) {
+            return ApiFormatter::createApi(200, 'success', $data);
+         }else {
+             return ApiFormatter::createApi(400, 'failed');
+         }
         // }
 
         // $dataSensor1 = Ketinggian::where('id_sensor', 1)->latest()->first();

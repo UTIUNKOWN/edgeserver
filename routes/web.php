@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/', function () {
-    return view('test');
+    return view('welcome');
 });
 Route::get('/kapasitassampah',[EdgeController::class,'sampah1']);
 Route::get('/kapasitassampah2',[EdgeController::class,'sampah2']);
