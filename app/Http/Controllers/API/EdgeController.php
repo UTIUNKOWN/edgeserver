@@ -19,17 +19,18 @@ class EdgeController extends Controller
      */
     public function index()
     {
+
         $data = ketinggian::latest()->first();
         // $data = Ketinggian::where('id_sensor', 1)->latest()->first();
         // $data = Ketinggian::where('id_sensor', 2)->latest()->first();
-
+        return view('test');
 
         // // Kirim respons JSON dengan data sensor
-        if($data) {
-            return ApiFormatter::createApi(200, 'success', $data);
-         }else {
-             return ApiFormatter::createApi(400, 'failed');
-         }
+        // if($data) {
+        //     return ApiFormatter::createApi(200, 'success', $data);
+        //  }else {
+        //      return ApiFormatter::createApi(400, 'failed');
+        //  }
         // }
 
         // $dataSensor1 = Ketinggian::where('id_sensor', 1)->latest()->first();
@@ -48,8 +49,22 @@ class EdgeController extends Controller
         // }
 
     }
+    public function sampah1()
+    {
+        $dataSensor1 = ketinggian::where('id_sensor', 1)
+        ->latest('created_at')
+        ->value('kapasitas');
+        return view('kapasitassampah', ['dataSensor1' => $dataSensor1]);
+    }
+    public function sampah2()
+    {
+    // Ambil data kapasitas terakhir berdasarkan id_sensor 2
+    $dataSensor2 = ketinggian::where('id_sensor', 2)
+    ->latest('created_at')
+    ->value('kapasitas');
 
-
+        return view('kapasitassampah2', ['dataSensor2' => $dataSensor2]);
+    }
     /**
      * Show the form for creating a new resource.
      *

@@ -1,116 +1,65 @@
-@extends('layout.base')
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-@section('content')
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
 
-<div>
+    <title>MONITORING TEMPAT SAMPAH</title>
 
-    {{-- breadcrumb --}}
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item active" aria-current="page">Home</li>
-        </ol>
-    </nav>
-    {{--!Ends breadcrumb --}}
+    {{-- panggil file jquery --}}
+    <script type="text/javascript" src="{{('jquery/jquery.min.js')}}"></script>
 
-    <button class="btn btn-primary bg-primary" type="button" data-toggle="modal" data-target="#addDeviceModal">
-        <i class="material-icons">add</i>
-        Add New Device
-    </button>
+    {{-- ajax untuk realtime --}}
+    <script type="text/javascript">
+    $(document).ready( function () {
+        setInterval( function() {
+            $("#kapasitas").load("{{url('kapasitassampah')}}");
+            $("#kapasitas2").load("{{url('kapasitassampah2')}}");
+        }, 1000);
+    });
+    </script>
+  </head>
+  <body>
 
-    {{-- data table  --}}
-    <div class="card mt-4">
-        <div class="card-body">
-            <h5 class="title h4 font-weight-bold text-uppercase">Device Lists</h5>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead class="text-uppercase">
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Device Key</th>
-                            <th scope="col">Location</th>
-                            <th scope="col">Updated At</th>
-                            <th scope="col">Temperature</th>
-                            <th scope="col">Pressure</th>
-                            <th scope="col">Rain</th>
-                            <th scope="col">Humidity</th>
-                            <th scope="col">Soil Moisture</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (!empty($devices))
-                        @foreach ($devices as $item)
-                        <tr>
-                            <th scope="row">{{$loop->index + 1}}</th>
-                            <td>{{$item['device_key']}}</td>
-                            <td>{{$item['location']}}</td>
-                            <td>{{  date( "m/d/Y", strtotime($item['updated_at']))  }}</td>
-                            <td>{{$item['temperature']}}&#8451;</td>
-                            <td>{{$item['pressure']}}mb</td>
-                            <td>{{$item['rain']}}%</td>
-                            <td>{{$item['humidity']}}%</td>
-                            <td>{{$item['soil_moisture']}}%</td>
-                            <td>
-                                <div class="d-flex">
-                                    <a href="/device/{{$item['devices_id']}}/remove" class="btn btn-float btn-danger btn-sm ml-1"
-                                        type="button" data-toggle="tooltip" data-placement="bottom" title="Remove Device">
-                                        <i class="material-icons">delete</i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                        @endif
-                    </tbody>
-                </table>
+    <div class="container" style="text-align: center; margin-top: 80 px">
+        <img src="{{('images/tukangsampah.png')}}" style="width: 300px">
 
+    <h1>MONITORING TEMPAT SAMPAH PINTAR</h1>
 
+    <div class="container">
+        <div class="row" style="text-align: center;">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" style="text-align: center; background-color:rgb(0, 225, 255); clor:white;">
+                      <h4>TEMPAT SAMPAH 1</h4>
+                    </div>
+                    <div class="card-body" >
+                        <div style="font-size: 70px; font-weight: bold; ">
+                        <span id="kapasitas">0</span> <span style="font-size: 24px; vertical-align:top;">%</span></div>
+                    </div>
+                  </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" style="text-align: center; background-color:rgb(0, 225, 255); clor:white;">
+                      <h4>TEMPAT SAMPAH 2</h4>
+                    </div>
+                    <div class="card-body" >
+                        <div style="font-size: 70px; font-weight: bold; ">
+                        <span id="kapasitas2">0</span> <span style="font-size: 24px; vertical-align:top;">%</span></div>
+                    </div>
+                  </div>
             </div>
         </div>
     </div>
-    {{--!ends data table  --}}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
 
 
-</div>
-
-
-@endsection
-
-
-@section('modal')
-<!-- Modal -->
-<div class="modal fade" id="addDeviceModal" tabindex="-1" role="dialog" aria-labelledby="addDeviceModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addDeviceModalLabel">Add New Device</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="/add-new-device" method="POST">
-                    {{ csrf_field() }}
-                    <div class="form-group">
-                        <label>Device Location</label>
-                        <input name="location" required type="text" class="form-control"
-                            placeholder="Enter Device Location">
-                    </div>
-                    <div class="form-group">
-                        <label>Device Key</label>
-                        <input name="device_key" required type="text" class="form-control"
-                            placeholder="Enter Device Key">
-                    </div>
-                    <button type="submit" class="btn btn-primary bg-primary">Add Device</button>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary " data-dismiss="modal">Close</button>
-
-            </div>
-        </div>
-    </div>
-</div>
-</div>
-@endsection
+  </body>
+</html>
