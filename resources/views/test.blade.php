@@ -19,6 +19,8 @@
         setInterval( function() {
             $("#kapasitas").load("{{url('kapasitassampah')}}");
             $("#kapasitas2").load("{{url('kapasitassampah2')}}");
+            $("#waktuSekarang1").text(currentTime.format('Y-m-d H:i:s'));
+             $("#waktuSekarang2").text(currentTime.format('Y-m-d H:i:s'));
         }, 1000);
     });
     </script>
@@ -28,7 +30,8 @@
     <div class="container" style="text-align: center; margin-top: 80 px">
         <img src="{{('images/tukangsampah.png')}}" style="width: 300px">
 
-    <h1>MONITORING TEMPAT SAMPAH PINTAR</h1>
+    <h1>MONITORING KAPASITAS</h1>
+<h2> TEMPAT SAMPAH PINTAR</h2>
 
     <div class="container">
         <div class="row" style="text-align: center;">
@@ -39,7 +42,7 @@
                     </div>
                     <div class="card-body" >
                         <div style="font-size: 70px; font-weight: bold; ">
-                        <span id="kapasitas">0</span> <span style="font-size: 24px; vertical-align:top;">%</span></div>
+                        <span id="kapasitas"></span> <span style="font-size: 24px; vertical-align:top;">%</span></div>
                     </div>
                   </div>
             </div>
@@ -51,7 +54,7 @@
                     </div>
                     <div class="card-body" >
                         <div style="font-size: 70px; font-weight: bold; ">
-                        <span id="kapasitas2">0</span> <span style="font-size: 24px; vertical-align:top;">%</span></div>
+                        <span id="kapasitas2"></span> <span style="font-size: 24px; vertical-align:top;">%</span></div>
                     </div>
                   </div>
             </div>
