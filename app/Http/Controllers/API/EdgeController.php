@@ -155,7 +155,7 @@ class EdgeController extends Controller
             'id_sensor' => 'required',
             'kapasitas' => 'required',
         ]);
-        $url = 'http://192.168.0.145:8001/api/monitoring';
+        $url = "http://trash.my.id/api/monitoring";
         $id_sensor = $request->id_sensor;
         $kapasitas = $request->kapasitas;
         $data = [
@@ -216,7 +216,7 @@ public function test(Request $request)
                 'kapasitas' => 'required',
             ]);
 
-            $url = 'http://192.168.1.14:8000/api/monitoring';
+            $url = 'http://trash.my.id/api/monitoring';
             $id_sensor = $request->id_sensor;
             $kapasitas = $request->kapasitas;
 
@@ -255,7 +255,7 @@ public function test(Request $request)
                 'kapasitas' => 'required',
             ]);
 
-            $url = 'http://192.168.1.14:8000/api/monitoring';
+            $url = 'http://trash.my.id/api/monitoring';
             $id_sensor = $request->id_sensor;
             $kapasitas = $request->kapasitas;
 
