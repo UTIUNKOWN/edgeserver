@@ -20,34 +20,102 @@ class EdgeController extends Controller
     public function index()
     {
 
-        $data = ketinggian::latest()->first();
+        // $data = ketinggian::latest()->first();
         // $data = Ketinggian::where('id_sensor', 1)->latest()->first();
         // $data = Ketinggian::where('id_sensor', 2)->latest()->first();
 
         // // Kirim respons JSON dengan data sensor
-        if($data) {
-            return ApiFormatter::createApi(200, 'success', $data);
-         }else {
-             return ApiFormatter::createApi(400, 'failed');
-         }
-        // }
-
-        // $dataSensor1 = Ketinggian::where('id_sensor', 1)->latest()->first();
-        // $dataSensor2 = Ketinggian::where('id_sensor', 2)->latest()->first();
-
-        // $data = [
-        //     'sensor_1' => $dataSensor1,
-        //     'sensor_2' => $dataSensor2
-        // ];
-
-        // // Kirim respons JSON dengan data sensor
-        // if ($data['sensor_1'] && $data['sensor_2']) {
+        // if($data) {
         //     return ApiFormatter::createApi(200, 'success', $data);
-        // } else {
-        //     return ApiFormatter::createApi(400, 'failed');
+        //  }else {
+        //      return ApiFormatter::createApi(400, 'failed');
+        //  }
         // }
+
+        $dataSensor1 = Ketinggian::where('id_sensor', 1)->latest()->first();
+        $dataSensor2 = Ketinggian::where('id_sensor', 2)->latest()->first();
+
+        $data = [
+            'sensor_1' => $dataSensor1,
+            'sensor_2' => $dataSensor2
+        ];
+
+        // Kirim respons JSON dengan data sensor
+        if ($data['sensor_1'] && $data['sensor_2']) {
+            return ApiFormatter::createApi(200, 'success', $data);
+        } else {
+            return ApiFormatter::createApi(400, 'failed');
+        }
 
     }
+    public function edge(Request $request)
+{
+    try {
+        $request->validate([
+            'id_sensor' => 'required',
+            'kapasitas' => 'required',
+        ]);
+
+        $id_sensor = $request->id_sensor;
+        $kapasitas = $request->kapasitas;
+
+        // Simpan data di edge dengan status "pending"
+        $dataEdge = ketinggian::create([
+            'id_sensor' => $id_sensor,
+            'kapasitas' => $kapasitas,
+            'status' => 'pending'
+        ]);
+
+        $url = 'http://trash.my.id/api/monitoring';
+
+        $data = [
+            'id_sensor' => $id_sensor,
+            'kapasitas' => $kapasitas,
+        ];
+
+        $client = new Client();
+        $response = $client->post($url, [
+            'timeout' => 4,
+            'form_params' => $data
+        ]);
+
+        // Cek apakah data berhasil dikirim ke cloud
+        if ($response->getStatusCode() === 200) {
+            // Ubah status data di edge menjadi "success" jika berhasil dikirim ke cloud
+            $dataEdge->status = 'success';
+            $dataEdge->save();
+
+            return response()->json([
+                'message' => 'success sending data to cloud',
+                'status' => 'success',
+                'data' => $data
+            ]);
+        } else {
+            // Jika terjadi masalah saat mengirim data ke cloud, biarkan status data di edge tetap "pending"
+            return response()->json([
+                'message' => 'Error occurred while sending data to cloud',
+                'status' => 'pending',
+                'data' => $data
+            ]);
+        }
+    } catch (Exception $e) {
+        // Jika terjadi kesalahan dalam penanganan data, simpan data di edge dengan status "pending"
+        $id_sensor = $request->id_sensor;
+        $kapasitas = $request->kapasitas;
+
+        $data = ketinggian::create([
+            'id_sensor' => $id_sensor,
+            'kapasitas' => $kapasitas,
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'message' => 'Error occurred while sending data to cloud',
+            'status' => 'pending',
+            'data' => $data
+        ], 500);
+    }
+}
     public function sampah1()
     {
         $dataSensor1 = ketinggian::where('id_sensor', 1)
