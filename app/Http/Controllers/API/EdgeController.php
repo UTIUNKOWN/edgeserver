@@ -221,7 +221,7 @@ class EdgeController extends Controller
             'id_sensor' => 'required',
             'kapasitas' => 'required',
         ]);
-        $url = "http://trash.my.id/api/monitoring";
+        $url = 'http://trash.my.id/api/monitoring';
         $id_sensor = $request->id_sensor;
         $kapasitas = $request->kapasitas;
         $data = [
