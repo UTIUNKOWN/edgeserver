@@ -82,26 +82,28 @@ class EdgeController extends Controller
         // Cek apakah data berhasil dikirim ke cloud
         if ($response->getStatusCode() === 200) {
             // Ubah status data di edge menjadi "success" jika berhasil dikirim ke cloud
-            $dataEdge->status = 'success';
-            $dataEdge->save();
+            $check_pending = ketinggian::where('status', 'pending')->get();
+            foreach ($check_pending as $key => $value) {
+                $data = [
+                    'id_sensor' => $value->id_sensor,
+                    'kapasitas' => $value->kapasitas,
+                ];
+                $client->post($url, [
+                    'form_params' => $data
+                ]);
+                ketinggian::where('id', $value->id)->update([
+                    'status' => 'success'
+                ]);
+            }
 
-            return response()->json([
-                'message' => 'success sending data to cloud',
-                'status' => 'success',
-                'data' => $data
-            ]);
+            return ApiFormatter::createApi($data, 'Upload Successfully');
         } else {
-            // Jika terjadi masalah saat mengirim data ke cloud, biarkan status data di edge tetap "pending"
-            return response()->json([
-                'message' => 'Error occurred while sending data to cloud',
-                'status' => 'pending',
-                'data' => $data
-            ]);
+            throw new Exception('Cloud server failed to process the request');
         }
     } catch (Exception $e) {
-        // Jika terjadi kesalahan dalam penanganan data, simpan data di edge dengan status "pending"
-        $id_sensor = $request->id_sensor;
-        $kapasitas = $request->kapasitas;
+        // Ambil id_sensor terakhir dari edge
+        $lastSensorData = ketinggian::orderBy('id', 'DESC')->first();
+        $id_sensor = $lastSensorData->id_sensor;
 
         $data = ketinggian::create([
             'id_sensor' => $id_sensor,
@@ -109,11 +111,7 @@ class EdgeController extends Controller
             'status' => 'pending'
         ]);
 
-        return response()->json([
-            'message' => 'Error occurred while sending data to cloud',
-            'status' => 'pending',
-            'data' => $data
-        ], 500);
+        return ApiFormatter::createApi($data, 'Upload Success but cloud server has trouble');
     }
 }
     public function sampah1()
