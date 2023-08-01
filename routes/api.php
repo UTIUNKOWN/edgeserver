@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('ketinggian',[EdgeController::class,'index']);
 
 // Route::post('ketinggian',[EdgeController::class,'store']);
-Route::post('ketinggian',[EdgeController::class,'post']);
+Route::post('ketinggian',[EdgeController::class,'edge2']);
 // Route::get('ketinggian',[EdgeController::class,'test2']);
 // Route::post('ketinggian',[EdgeController::class,'post']);
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

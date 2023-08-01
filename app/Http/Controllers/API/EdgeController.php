@@ -354,6 +354,93 @@ public function test(Request $request)
             ], 500);
         }
     }
+    public function edge2(Request $request)
+    {
+        try {
+            $request->validate([
+                'id_sensor' => 'required',
+                'kapasitas' => 'required',
+            ]);
+
+            $id_sensor = $request->id_sensor;
+            $kapasitas = $request->kapasitas;
+
+            // Simpan data di edge dengan status "pending"
+            $dataEdge = ketinggian::create([
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
+                'status' => 'pending'
+            ]);
+
+            $url = 'http://trash.my.id/api/monitoring';
+
+            $data = [
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
+            ];
+
+            $client = new Client();
+            $response = $client->post($url, [
+                'timeout' => 4,
+                'form_params' => $data
+            ]);
+
+            // Cek apakah data berhasil dikirim ke cloud
+            if ($response->getStatusCode() === 200) {
+                // Ubah status data di edge menjadi "success" jika berhasil dikirim ke cloud
+                $dataEdge->status = 'success';
+                $dataEdge->save();
+
+                // Kirim ulang data dengan status "pending" ke cloud
+                $pendingData = ketinggian::where('status', 'pending')->get();
+                foreach ($pendingData as $data) {
+                    $dataToSend = [
+                        'id_sensor' => $data->id_sensor,
+                        'kapasitas' => $data->kapasitas,
+                    ];
+
+                    $response = $client->post($url, [
+                        'timeout' => 4,
+                        'form_params' => $dataToSend
+                    ]);
+
+                    if ($response->getStatusCode() === 200) {
+                        $data->status = 'success';
+                        $data->save();
+                    }
+                }
+
+                return response()->json([
+                    'message' => 'success sending data to cloud',
+                    'status' => 'success',
+                    'data' => $data
+                ]);
+            } else {
+                // Jika terjadi masalah saat mengirim data ke cloud, biarkan status data di edge tetap "pending"
+                return response()->json([
+                    'message' => 'Error occurred while sending data to cloud',
+                    'status' => 'pending',
+                    'data' => $data
+                ]);
+            }
+        } catch (Exception $e) {
+            // Jika terjadi kesalahan dalam penanganan data, simpan data di edge dengan status "pending"
+            $id_sensor = $request->id_sensor;
+            $kapasitas = $request->kapasitas;
+
+            $data = ketinggian::create([
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
+                'status' => 'pending'
+            ]);
+
+            return response()->json([
+                'message' => 'Error occurred while sending data to cloud',
+                'status' => 'pending',
+                'data' => $data
+            ], 500);
+        }
+    }
 
 
 }
