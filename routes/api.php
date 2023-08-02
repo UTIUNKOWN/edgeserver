@@ -13,11 +13,13 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::get('ketinggian',[EdgeController::class,'index']);
+// Route::get('ketinggian',[EdgeController::class,'index']);
 
 // Route::post('ketinggian',[EdgeController::class,'store']);
-Route::post('ketinggian',[EdgeController::class,'edge2']);
-// Route::get('ketinggian',[EdgeController::class,'test2']);
+// Route::post('ketinggian',[EdgeController::class,'post']);
+// Route::get('ketinggian',[EdgeController::class,'post']);
+Route::post('ketinggian',[EdgeController::class,'delay']);
+Route::get('ketinggian',[EdgeController::class,'index']);
 // Route::post('ketinggian',[EdgeController::class,'post']);
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

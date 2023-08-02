@@ -1,21 +1,20 @@
 <?php
 namespace App\Helpers;
-Class ApiFormatter 
+Class ApiFormatter
 {
-    Protected static $response = [
-        'code' =>null,
-        'message' =>null,
-        'data' =>null,
+    protected static $response = [
+        'code' => null,
+        'message' => null,
+        'data' => null,
     ];
-public static function createApi($code = null, $message = null, $data = null)
-{
-    self::$response['code'] = $code;
-    self::$response['message'] = $message;
-    self::$response['data'] = $data;
 
-    return response()->json(self::$response, self::$response['code']);
+    public static function createApi($data = null, $message = null, $code = 200)
+    {
+        self::$response['code'] = $code;
+        self::$response['message'] = $message;
+        self::$response['data'] = $data;
+
+        return response()->json(self::$response, self::$response['code']);
+    }
 }
 
-    
-    }
-   
