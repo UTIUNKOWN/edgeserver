@@ -442,86 +442,102 @@ public function test(Request $request)
     }
     public function delay(Request $request)
     {
-        {
-            try {
-                $request->validate([
-                    'id_sensor' => 'required',
-                    'kapasitas' => 'required',
-                ]);
-                $url = 'http://trash.my.id/api/monitoring';
-                $id_sensor = $request->id_sensor;
-                $kapasitas = $request->kapasitas;
-                $data = [
+        try {
+            $request->validate([
+                'id_sensor' => 'required',
+                'kapasitas' => 'required',
+            ]);
+
+            $id_sensor = $request->id_sensor;
+            $kapasitas = $request->kapasitas;
+            $url = 'http://trash.my.id/api/monitoring';
+
+            // Data dari sensor
+            $data = [
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
+            ];
+
+            // Catat waktu sebelum pengiriman data dari sensor ke Edge
+            $startTimeToEdge = Carbon::now();
+
+            // Kirim data dari sensor ke Edge
+            $client = new Client();
+            $response = $client->post($url, [
+                'timeout' => 4,
+                'form_params' => $data
+            ]);
+
+            // Catat waktu setelah pengiriman data dari sensor ke Edge
+            $endTimeToEdge = Carbon::now();
+            $durationToEdge = $endTimeToEdge->diffInMilliseconds($startTimeToEdge) . ' ms';
+
+            if ($response->getStatusCode() == 200) {
+                // Jika pengiriman data ke cloud berhasil, simpan data di edge dengan status "success"
+                $data = ketinggian::create([
                     'id_sensor' => $id_sensor,
                     'kapasitas' => $kapasitas,
-                ];
-
-                // Catat waktu sebelum pengiriman
-                $startTime = Carbon::now();
-
-                $client = new Client();
-                $response = $client->post($url, [
-                    'timeout' => 4,
-                    'form_params' => $data
+                    'status' => 'success'
                 ]);
 
-                // Catat waktu setelah pengiriman
-                $endTime = Carbon::now();
-                $duration = $endTime->diffInMilliseconds($startTime);
+                // Log waktu pengiriman data ke Edge dan durasi pengiriman ke Edge
+                Log::info('Upload Edge Successfully. Time taken to Edge: ' . $durationToEdge);
 
-                if ($response->getStatusCode() == 200) {
-                    $data = ketinggian::create([
-                        'id_sensor' => $id_sensor,
-                        'kapasitas' => $kapasitas,
-                        'status' => 'success'
+                // Cek apakah ada data dengan status "pending" yang perlu dikirim ulang
+                $pendingData = ketinggian::where('status', 'pending')->get();
+                foreach ($pendingData as $pending) {
+                    // Catat waktu sebelum pengiriman data dari sensor ke Edge (kirim ulang)
+                    $startTimeToEdge = Carbon::now();
+
+                    // Kirim ulang data dari sensor ke Edge
+                    $response = $client->post($url, [
+                        'form_params' => [
+                            'id_sensor' => $pending->id_sensor,
+                            'kapasitas' => $pending->kapasitas,
+                        ]
                     ]);
 
-                    $check_pending = ketinggian::where('status', 'pending')->get();
-                    foreach ($check_pending as $key => $value) {
-                        $data = [
-                            'id_sensor' => $value->id_sensor,
-                            'kapasitas' => $value->kapasitas,
-                        ];
+                    // Catat waktu setelah pengiriman data dari sensor ke Edge (kirim ulang)
+                    $endTimeToEdge = Carbon::now();
+                    $durationToEdge = $endTimeToEdge->diffInMilliseconds($startTimeToEdge) . ' ms';
 
-                        // Catat waktu sebelum pengiriman
-                        $startTime = Carbon::now();
+                    if ($response->getStatusCode() == 200) {
+                        // Jika pengiriman ulang berhasil, tandai data sebagai "success" di edge server
+                        ketinggian::where('id', $pending->id)->update(['status' => 'success']);
 
-                        $client->post($url, [
-                            'form_params' => $data
-                        ]);
-
-                        // Catat waktu setelah pengiriman
-                        $endTime = Carbon::now();
-                        $duration = $endTime->diffInMilliseconds($startTime);
-
-                        ketinggian::where('id', $value->id)->update([
-                            'status' => 'success'
-                        ]);
+                        // Log waktu pengiriman data ke Edge (pengiriman ulang) dan durasi pengiriman ke Edge
+                        Log::info('Upload Edge Successfully (Resent Data). Time taken to Edge: ' . $durationToEdge);
+                    } else {
+                        // Jika terjadi kesalahan saat pengiriman ulang, tangani sesuai kebutuhan aplikasi
+                        // Misalnya, ubah status data menjadi "pending" lagi atau ambil tindakan lain
+                        // Anda juga dapat mencatat pesan kesalahan dalam log atau memberikan respons error
+                        Log::error('Resend Data Failed. Status Code: ' . $response->getStatusCode());
                     }
-
-                    // Log waktu pengiriman data ke cloud server
-                    Log::info('Upload Cloud Successfully. Time taken: ' . $duration . ' ms');
-
-                    // Cetak durasi waktu ke output
-                    echo 'Upload Cloud Successfully. Time taken: ' . $duration . ' ms';
-
-                    return ApiFormatter::createApi($data, 'Upload Cloud Successfully', );
-                } else {
-                    throw new Exception('Cloud server failed to process the request');
                 }
-            } catch (Exception $e) {
-                // Ambil id_sensor terakhir dari edge
-                $lastSensorData = ketinggian::orderBy('id', 'DESC')->first();
-                $id_sensor = $lastSensorData->id_sensor;
 
+                return ApiFormatter::createApi($data, 'Save edge and Upload Cloud Successfully');
+            } else {
+                // Jika ada masalah di cloud, simpan data di edge dengan status "pending"
                 $data = ketinggian::create([
                     'id_sensor' => $id_sensor,
                     'kapasitas' => $kapasitas,
                     'status' => 'pending'
                 ]);
 
-                return ApiFormatter::createApi($data, 'Upload Success but cloud server has trouble');
+                return ApiFormatter::createApi($data, 'Upload Success but cloud server has trouble, saving edge');
             }
+        } catch (Exception $e) {
+            // Jika terjadi kesalahan lain, simpan data di edge dengan status "pending"
+            $lastSensorData = ketinggian::orderBy('id', 'DESC')->first();
+            $id_sensor = $lastSensorData->id_sensor;
+
+            $data = ketinggian::create([
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
+                'status' => 'pending'
+            ]);
+
+            return ApiFormatter::createApi($data, 'Upload Success but cloud server has trouble');
         }
     }
 }
