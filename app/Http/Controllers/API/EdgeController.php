@@ -263,7 +263,7 @@ class EdgeController extends Controller
                 ]);
             }
 
-            return ApiFormatter::createApi($data, 'Upload Cloud Successfully', );
+            return ApiFormatter::createApi($data, 'Edge saving and Upload Cloud Successfully', );
         } else {
             throw new Exception('Cloud server failed to process the request');
         }
@@ -278,7 +278,7 @@ class EdgeController extends Controller
             'status' => 'pending'
         ]);
 
-        return ApiFormatter::createApi($data, 'Upload Success but cloud server has trouble');
+        return ApiFormatter::createApi($data, 'Upload Edge Success, but cloud server has trouble');
     }
 }
 public function test(Request $request)
