@@ -229,8 +229,8 @@ class EdgeController extends Controller
                 'id_sensor' => 'required',
                 'kapasitas' => 'required',
             ]);
-            $url = 'http://trash.my.id/api/monitoring';
-            // $url = 'http://192.168.0.224:8000/api/siskom';
+            // $url = 'http://trash.my.id/api/monitoring';
+            $url = 'http://petapa.adevelop.my.id/api/siskom';
             $id_sensor = $request->id_sensor;
             $kapasitas = $request->kapasitas;
             $data = [
@@ -289,7 +289,7 @@ class EdgeController extends Controller
                     'kapasitas' => 'required',
                 ]);
 
-                $url = 'http://trash.my.id/api/monitoring';
+                $url = 'http://petapa.adevelop.my.id/api/siskom';
                 $id_sensor = $request->id_sensor;
                 $kapasitas = $request->kapasitas;
 
