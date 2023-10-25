@@ -230,6 +230,7 @@ class EdgeController extends Controller
                 'kapasitas' => 'required',
             ]);
             $url = 'http://trash.my.id/api/monitoring';
+            // $url = 'http://192.168.0.224:8000/api/siskom';
             $id_sensor = $request->id_sensor;
             $kapasitas = $request->kapasitas;
             $data = [
@@ -536,6 +537,82 @@ class EdgeController extends Controller
             ]);
 
             return ApiFormatter::createApi($data, 'Upload Success but cloud server has trouble');
+        }
+    }
+    public function postreza(Request $request)
+    {
+        try {
+            $request->validate([
+                'id_sensor' => 'required',
+                'kapasitas' => 'required',
+            ]);
+
+            $id_sensor = $request->id_sensor;
+            $kapasitas = $request->kapasitas;
+            $data = [
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
+            ];
+
+            $urls = [
+                'http://trash.my.id/api/monitoring',
+                'http://192.168.0.224:8000/api/siskom', // Add your second URL here
+            ];
+
+            $client = new Client();
+
+            $success = false;
+
+            foreach ($urls as $url) {
+                $response = $client->post($url, [
+                    'timeout' => 4,
+                    'form_params' => $data
+                ]);
+
+                if ($response->getStatusCode() == 200) {
+                    $success = true;
+                    ketinggian::create([
+                        'id_sensor' => $id_sensor,
+                        'kapasitas' => $kapasitas,
+                        'status' => 'success'
+                    ]);
+                }
+            }
+
+            if ($success) {
+                $check_pending = ketinggian::where('status', 'pending')->get();
+                foreach ($check_pending as $key => $value) {
+                    foreach ($urls as $url) {
+                        $data = [
+                            'id_sensor' => $value->id_sensor,
+                            'kapasitas' => $value->kapasitas,
+                        ];
+                        $client->post($url, [
+                            'form_params' => $data
+                        ]);
+                    }
+                    ketinggian::where('id', $value->id)->update([
+                        'status' => 'success'
+                    ]);
+                }
+
+                return ApiFormatter::createApi($data, 'Edge saving and Upload Cloud Successfully');
+            } else {
+                throw new Exception('All cloud servers failed to process the request');
+            }
+
+        } catch (Exception $e) {
+            // Ambil id_sensor terakhir dari edge
+            $lastSensorData = ketinggian::orderBy('id', 'DESC')->first();
+            $id_sensor = $lastSensorData->id_sensor;
+
+            $data = ketinggian::create([
+                'id_sensor' => $id_sensor,
+                'kapasitas' => $kapasitas,
+                'status' => 'pending'
+            ]);
+
+            return ApiFormatter::createApi($data, 'Upload Edge Success, but cloud server has trouble');
         }
     }
 }

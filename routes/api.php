@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 // Route::post('ketinggian',[EdgeController::class,'store']);
 // Route::post('ketinggian',[EdgeController::class,'post']);
 // Route::get('ketinggian',[EdgeController::class,'post']);
+// Route::post('ketinggian',[EdgeController::class,'post']);
 Route::post('ketinggian',[EdgeController::class,'post']);
 Route::get('ketinggian',[EdgeController::class,'index']);
 // Route::post('ketinggian',[EdgeController::class,'post']);
